@@ -1,0 +1,50 @@
+stages:
+  - build
+  - test
+  - deploy_dev
+  - deploy_qa
+  - deploy_staging
+  - deploy_prod
+
+variables:
+  DOCKER_DRIVER: overlay2
+
+services:
+  - docker:dind
+
+before_script:
+  - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+
+build:
+  stage: build
+  script:
+    - docker-compose build
+
+test:
+  stage: test
+  script:
+    - docker-compose run --rm gateway pytest gateway/tests/
+    - docker-compose run --rm users pytest users/tests/
+    - docker-compose run --rm orders pytest orders/tests/
+
+deploy_dev:
+  stage: deploy_dev
+  script:
+    - docker-compose -f docker-compose.yml up -d
+
+deploy_qa:
+  stage: deploy_qa
+  script:
+    - docker-compose -f docker-compose.yml up -d
+
+deploy_staging:
+  stage: deploy_staging
+  script:
+    - docker-compose -f docker-compose.yml up -d
+
+deploy_prod:
+  stage: deploy_prod
+  only:
+    - main
+  script:
+    - docker-compose -f docker-compose.yml up -d
