@@ -1,50 +1,94 @@
-stages:
-  - build
-  - test
-  - deploy_dev
-  - deploy_qa
-  - deploy_staging
-  - deploy_prod
+image: docker:latest
+services:
+  - name: docker:dind
+    alias: docker
 
 variables:
+  DOCKER_IMAGE_PREFIX: sarrlick
+  KUBE_NAMESPACE_DEV: dev
+  KUBE_NAMESPACE_QA: qa
+  KUBE_NAMESPACE_STAGING: staging
+  KUBE_NAMESPACE_PROD: prod
   DOCKER_DRIVER: overlay2
 
-services:
-  - docker:dind
+stages:
+  - Build image
+  - Test acceptation
+  - Release image
+  - Deploy dev
+  - Deploy qa
+  - Deploy staging
+  - Deploy prod
 
 before_script:
   - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
 
 build:
-  stage: build
+  stage: Build image
   script:
-    - docker-compose build
+    - docker build -t $DOCKER_IMAGE_PREFIX/gateway ./gateway
+    - docker build -t $DOCKER_IMAGE_PREFIX/users ./users
+    - docker build -t $DOCKER_IMAGE_PREFIX/orders ./orders
 
-test:
-  stage: test
+test acceptation:
+  stage: Test acceptation
   script:
-    - docker-compose run --rm gateway pytest gateway/tests/
-    - docker-compose run --rm users pytest users/tests/
-    - docker-compose run --rm orders pytest orders/tests/
+    - docker-compose up -d
+    - docker-compose run --rm tests
 
-deploy_dev:
-  stage: deploy_dev
+release image:
+  stage: Release image
   script:
-    - docker-compose -f docker-compose.yml up -d
+    - docker load < DOCKER_IMAGE_PREFIX/gateway.tar
+    - docker tag DOCKER_IMAGE_PREFIX/gateway "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
+    - docker tag DOCKER_IMAGE_PREFIX/gateway "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker push "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
+    - docker push "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
 
-deploy_qa:
-  stage: deploy_qa
+    - docker load < DOCKER_IMAGE_PREFIX/users.tar
+    - docker tag DOCKER_IMAGE_PREFIX/users "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
+    - docker tag DOCKER_IMAGE_PREFIX/users "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker push "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
+    - docker push "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
+
+    - docker load < DOCKER_IMAGE_PREFIX/orders.tar
+    - docker tag DOCKER_IMAGE_PREFIX/orders "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
+    - docker tag DOCKER_IMAGE_PREFIX/orders "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker push "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
+    - docker push "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
+
+deploy-dev:
+  stage: Deploy dev
   script:
-    - docker-compose -f docker-compose.yml up -d
+    - helm upgrade gateway gateway-chart --namespace $KUBE_NAMESPACE_DEV --values ./values.yaml
+    - helm upgrade users users-chart --namespace $KUBE_NAMESPACE_DEV --values ./values.yaml
+    - helm upgrade orders orders-chart --namespace $KUBE_NAMESPACE_DEV --values ./values.yaml
 
-deploy_staging:
-  stage: deploy_staging
+deploy-qa:
+  stage: Deploy qa
   script:
-    - docker-compose -f docker-compose.yml up -d
+    - helm upgrade gateway gateway-chart --namespace $KUBE_NAMESPACE_QA --values ./values.yaml
+    - helm upgrade users users-chart --namespace $KUBE_NAMESPACE_QA --values ./values.yaml
+    - helm upgrade orders orders-chart --namespace $KUBE_NAMESPACE_QA --values ./values.yaml
 
-deploy_prod:
-  stage: deploy_prod
+deploy-staging:
+  stage: Deploy staging
+  script:
+    - helm upgrade gateway gateway-chart --namespace $KUBE_NAMESPACE_STAGING --values ./values.yaml
+    - helm upgrade users users-chart --namespace $KUBE_NAMESPACE_STAGING --values ./values.yaml
+    - helm upgrade orders orders-chart --namespace $KUBE_NAMESPACE_STAGING --values ./values.yaml
+
+deploy-prod:
+  stage: Deploy prod
+  script:
+    - helm upgrade gateway gateway-chart --namespace $KUBE_NAMESPACE_PROD --values ./values.yaml
+    - helm upgrade users users-chart --namespace $KUBE_NAMESPACE_PROD --values ./values.yaml
+    - helm upgrade orders orders-chart --namespace $KUBE_NAMESPACE_PROD --values ./values.yaml
+  environment:
+    name: $KUBE_NAMESPACE_PROD
   only:
     - main
-  script:
-    - docker-compose -f docker-compose.yml up -d
+  when: manual
