@@ -44,10 +44,17 @@ build:
     - docker build -t $DOCKER_IMAGE_PREFIX/gateway ./gateway
     - docker build -t $DOCKER_IMAGE_PREFIX/users ./users
     - docker build -t $DOCKER_IMAGE_PREFIX/orders ./orders
+  artifacts:
+    paths:
+      - $DOCKER_IMAGE_PREFIX/gateway.tar
+      - $DOCKER_IMAGE_PREFIX/users.tar
+      - $DOCKER_IMAGE_PREFIX/orders.tar
 
 release image:
   stage: Release image
   script:
+    - ls -l $DOCKER_IMAGE_PREFIX  # Vérifiez le contenu du répertoire
+    - ls -l $DOCKER_IMAGE_PREFIX/gateway.tar  # Vérifiez le fichier
     - docker load < DOCKER_IMAGE_PREFIX/gateway.tar
     - docker tag DOCKER_IMAGE_PREFIX/gateway "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
     - docker tag DOCKER_IMAGE_PREFIX/gateway "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
