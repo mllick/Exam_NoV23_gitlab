@@ -25,17 +25,17 @@ stages:
   - Deploy staging
   - Deploy prod
 
-debug-kubeconfig:
+debug kubeconfig:
 stage: Kubeconfig
   script:
     - cat $KUBECONFIG
 
-debug-kubectl:
+debug kubectl:
 stage: Kubectl
   script:
     - kubectl --kubeconfig=$KUBECONFIG --v=9 get pods
 
-debug-permissions:
+debug permissions:
 stage: Permissions
   script:
     - ls -l $KUBECONFIG
