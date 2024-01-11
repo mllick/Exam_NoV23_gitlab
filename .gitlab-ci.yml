@@ -1,6 +1,7 @@
 image: docker:latest
 services:
   - name: docker:dind
+    entrypoint: ["/bin/sh", "-c"]
     alias: docker
 
 variables:
@@ -11,10 +12,10 @@ variables:
   KUBE_NAMESPACE_PROD: prod
   DOCKER_DRIVER: "overlay2"
   CONTAINER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
-  IP_DEV: 46.51.198.133
-  IP_QA: 46.51.198.133
-  IP_STAGING: 46.51.198.133
-  IP_PROD: 46.51.198.133
+  IP_DEV: 18.201.36.7
+  IP_QA: 18.201.36.7
+  IP_STAGING: 18.201.36.7
+  IP_PROD: 18.201.36.7
   NODEPORT_DEV: 30000
   NODEPORT_QA: 30001
   NODEPORT_STAGING: 30002
