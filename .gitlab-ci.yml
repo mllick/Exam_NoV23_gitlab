@@ -53,6 +53,7 @@ build:
 release image:
   stage: Release image
   script:
+    - echo "DOCKER_IMAGE_PREFIX: $DOCKER_IMAGE_PREFIX"
     - ls -l $DOCKER_IMAGE_PREFIX  # Vérifiez le contenu du répertoire
     - ls -l $DOCKER_IMAGE_PREFIX/gateway.tar  # Vérifiez le fichier
     - docker load < DOCKER_IMAGE_PREFIX/gateway.tar
