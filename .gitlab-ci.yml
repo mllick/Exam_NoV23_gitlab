@@ -124,7 +124,7 @@ deploy-dev:
     - ls orders-chart/
     - ls orders-chart/values.yaml
     
-    - cp orders-chart/values.yaml orders/values.yml
+    - sudo cp orders-chart/values.yaml values.yml
     - cat orders/values.yml
     
     - sudo helm upgrade --install app-orders ./orders-chart \
@@ -138,7 +138,7 @@ deploy-dev:
     - mkdir .kube
     - ls
     - cp $KUBE_CONFIG .kube/config
-    - cp users-chart/values.yaml users/values.yml
+    - sudo cp users-chart/values.yaml values.yml
     - cat values.yml
     - sudo helm upgrade --install app-users ./users-chart \
       --values=values.yml \
@@ -151,7 +151,7 @@ deploy-dev:
     - mkdir .kube
     - ls
     - cp $KUBE_CONFIG .kube/config
-    - cp gateway-chart/values.yaml gateway/values.yml
+    - sudo cp gateway-chart/values.yaml values.yml
     - cat values.yml
     - sudo helm upgrade --install app-gateway ./gateway-chart \
       --values=values.yml \
