@@ -11,6 +11,14 @@ variables:
   KUBE_NAMESPACE_PROD: prod
   DOCKER_DRIVER: "overlay2"
   CONTAINER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
+  IP_DEV: 46.51.198.133
+  IP_QA: 46.51.198.133
+  IP_STAGING: 46.51.198.133
+  IP_PROD: 46.51.198.133
+  NODEPORT_DEV: 30000
+  NODEPORT_QA: 30001
+  NODEPORT_STAGING: 30002
+  NODEPORT_PROD: 30003
 
 
 stages:
@@ -98,10 +106,40 @@ release image:
 
 deploy-dev:
   stage: Deploy dev
+  environment:
+    name: dev-$CI_COMMIT_REF_NAME
+    url: http://$IP_DEV:$NODEPORT_DEV
+    on_stop: stop_dev
+
+  variables:
+    NAMESPACE: dev
+
   script:
-    - sudo helm upgrade --install gateway ./gateway-chart --namespace $KUBE_NAMESPACE_DEV --values=values.yaml
-    - sudo helm upgrade --install users ./users-chart --namespace $KUBE_NAMESPACE_DEV --values=values.yaml
-    - sudo helm upgrade --install orders ./orders-chart --namespace $KUBE_NAMESPACE_DEV --values=values.yaml
+    - apps=("app-gateway" "app-orders" "app-users")
+    - ports=("$NODEPORT_DEV" "$NODEPORT_QA" "$NODEPORT_STAGING" "$NODEPORT_PROD")
+
+    # Déploiement de chaque application
+    for i in "${!apps[@]}"; do
+      app="${apps[$i]}"
+      port="${ports[$i]}"
+
+      rm -rf .kube
+      mkdir .kube
+      ls
+      cp $KUBE_CONFIG .kube/config
+
+      # Utilisation du nom de l'application pour déterminer le chemin et le nom du fichier values.yaml
+      cp $app/values.yaml values.yml
+      cat values.yml
+
+      sudo helm upgrade --install $app $app/ \
+        --values=values.yml \
+        --namespace $NAMESPACE \
+        --set image.repository="$CI_REGISTRY_IMAGE" \
+        --set image.tag="$CI_COMMIT_SHORT_SHA" \
+        --set service.nodeport="$port"
+    done
+
 
 deploy-qa:
   stage: Deploy qa
