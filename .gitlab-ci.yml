@@ -42,7 +42,7 @@ build:
   script:
     - docker build -t gateway ./gateway
     - docker build -t users ./users
-    - docker build -t orders" ./orders
+    - docker build -t orders ./orders
   artifacts:
     paths:
       - gateway.tar"
