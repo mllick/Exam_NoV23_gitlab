@@ -32,27 +32,18 @@ build:
 
 test acceptation:
   stage: Test acceptation
+  image: python:latest
+  before_script:
+    # Show docker daemon info (optional, good for debugging)
+    # - sudo apt install python3-pip -y
   script:
     #- pip install -r requirements.txt
-    - apt-get update
-    - apt-get install -y python3-pip
-    - pip install fastapi pytest httpx
+    - sudo apt-get install -y python3-pip
+    - pip install fastapi
+    - pip install pytest
+    - pip install httpx
     - cd app/
     - python3 -m pytest
-
-    - docker load < DOCKER_IMAGE_PREFIX/users.tar
-    - docker run -d -p 80:8000 -e PORT=8000 --name users DOCKER_IMAGE_PREFIX/users
-    - sleep 5
-     
-    - docker load < DOCKER_IMAGE_PREFIX/orders.tar
-    - docker run -d -p 80:8000 -e PORT=8000 --name orders DOCKER_IMAGE_PREFIX/orders
-    - sleep 5
-   
-    - docker load < DOCKER_IMAGE_PREFIX/gateway.tar
-    - docker run -d -p 80:8000 -e PORT=8000 --name gateway DOCKER_IMAGE_PREFIX/gateway
-    - sleep 5
-    - apk --no-cache add curl
-    - curl "http://docker" 
 
 release image:
   stage: Release image
