@@ -119,7 +119,6 @@ deploy-dev:
     - mkdir ~/.kube/
     - ls
     - cat $KUBE_CONFIG > ~/.kube/config
-    - kubectl config view --raw >~/.kube/config
     
     # Ajout de commandes ls pour déboguer
     - ls orders-chart/
@@ -139,7 +138,6 @@ deploy-dev:
     - mkdir ~/.kube/
     - ls
     - cat $KUBE_CONFIG > ~/.kube/config
-    - kubectl config view --raw >~/.kube/config
     - cp users-chart/values.yaml values.yml
     - cat values.yml
     - sudo helm upgrade --install app-users ./users-chart \
@@ -153,7 +151,6 @@ deploy-dev:
     - mkdir ~/.kube/
     - ls
     - cat $KUBE_CONFIG > ~/.kube/config
-    - kubectl config view --raw >~/.kube/config
     - sudo cp gateway-chart/values.yaml values.yml
     - cat values.yml
     - sudo helm upgrade --install app-gateway ./gateway-chart \
