@@ -101,30 +101,30 @@ release image:
 deploy-dev:
   stage: Deploy dev
   script:
-    - helm upgrade gateway gateway-chart --namespace $KUBE_NAMESPACE_DEV --values ./values.yaml
-    - helm upgrade users users-chart --namespace $KUBE_NAMESPACE_DEV --values ./values.yaml
-    - helm upgrade orders orders-chart --namespace $KUBE_NAMESPACE_DEV --values ./values.yaml
+    - helm upgrade --install gateway ./gateway-chart --namespace $KUBE_NAMESPACE_DEV --values=values.yaml
+    - helm upgrade --install users ./users-chart --namespace $KUBE_NAMESPACE_DEV --values=values.yaml
+    - helm upgrade --install orders ./orders-chart --namespace $KUBE_NAMESPACE_DEV --values=values.yaml
 
 deploy-qa:
   stage: Deploy qa
   script:
-    - helm upgrade gateway gateway-chart --namespace $KUBE_NAMESPACE_QA --values ./values.yaml
-    - helm upgrade users users-chart --namespace $KUBE_NAMESPACE_QA --values ./values.yaml
-    - helm upgrade orders orders-chart --namespace $KUBE_NAMESPACE_QA --values ./values.yaml
+    - helm upgrade gateway ./gateway-chart --namespace $KUBE_NAMESPACE_QA --values=values.yaml
+    - helm upgrade users ./users-chart --namespace $KUBE_NAMESPACE_QA --values=values.yaml
+    - helm upgrade orders ./orders-chart --namespace $KUBE_NAMESPACE_QA --values=values.yaml
 
 deploy-staging:
   stage: Deploy staging
   script:
-    - helm upgrade gateway gateway-chart --namespace $KUBE_NAMESPACE_STAGING --values ./values.yaml
-    - helm upgrade users users-chart --namespace $KUBE_NAMESPACE_STAGING --values ./values.yaml
-    - helm upgrade orders orders-chart --namespace $KUBE_NAMESPACE_STAGING --values ./values.yaml
+    - helm upgrade --install gateway ./gateway-chart --namespace $KUBE_NAMESPACE_STAGING --values=values.yaml
+    - helm upgrade --install users ./users-chart --namespace $KUBE_NAMESPACE_STAGING --values=values.yaml
+    - helm upgrade --install orders ./orders-chart --namespace $KUBE_NAMESPACE_STAGING --values=values.yaml
 
 deploy-prod:
   stage: Deploy prod
   script:
-    - helm upgrade gateway gateway-chart --namespace $KUBE_NAMESPACE_PROD --values ./values.yaml
-    - helm upgrade users users-chart --namespace $KUBE_NAMESPACE_PROD --values ./values.yaml
-    - helm upgrade orders orders-chart --namespace $KUBE_NAMESPACE_PROD --values ./values.yaml
+    - helm upgrade --install gateway ./gateway-chart --namespace $KUBE_NAMESPACE_PROD --values=values.yaml
+    - helm upgrade --install users ./users-chart --namespace $KUBE_NAMESPACE_PROD --values=values.yaml
+    - helm upgrade --install orders ./orders-chart --namespace $KUBE_NAMESPACE_PROD --values=values.yaml
   environment:
     name: $KUBE_NAMESPACE_PROD
   only:
