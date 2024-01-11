@@ -127,10 +127,10 @@ deploy-dev:
     
     - cp orders-chart/values.yaml values.yml
     - cat values.yml
-    - curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 && \
-      chmod +x get_helm.sh && \
-      ./get_helm.sh && \
-    - rm get_helm.sh
+    - apk add --no-cache curl
+    - curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+    - chmod +x get_helm.sh
+    - ./get_helm.sh
     - helm upgrade --install app-orders ./orders-chart \
       --values=orders/values.yml \
       --namespace $NAMESPACE \
