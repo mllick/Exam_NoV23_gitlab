@@ -53,10 +53,10 @@ build:
 release image:
   stage: Release image
   script:
-    - echo "DOCKER_IMAGE_PREFIX: $DOCKER_IMAGE_PREFIX"
-    - ls -l $DOCKER_IMAGE_PREFIX  # Vérifiez le contenu du répertoire
-    - ls -l $DOCKER_IMAGE_PREFIX/gateway.tar  # Vérifiez le fichier
-    - docker load < DOCKER_IMAGE_PREFIX/gateway.tar
+    - echo "DOCKER_IMAGE_PREFIX: $DOCKER_IMAGE_PREFIX" || true
+    - ls -l $DOCKER_IMAGE_PREFIX || true
+    - ls -l $DOCKER_IMAGE_PREFIX/gateway.tar || true
+    - docker load < $DOCKER_IMAGE_PREFIX/gateway.tar || true
     - docker tag DOCKER_IMAGE_PREFIX/gateway "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
     - docker tag DOCKER_IMAGE_PREFIX/gateway "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
