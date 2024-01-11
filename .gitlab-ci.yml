@@ -40,6 +40,7 @@ stages:
 build:
   stage: Build image
   script:
+    - ls -l  # Affiche le contenu du répertoire de travail
     - docker build -t gateway ./gateway
     - docker build -t users ./users
     - docker build -t orders ./orders
