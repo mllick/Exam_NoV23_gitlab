@@ -127,7 +127,7 @@ deploy-dev:
     
     - cp orders-chart/values.yaml values.yml
     - cat values.yml
-    
+    - sudo apt-get install helm
     - helm upgrade --install app-orders ./orders-chart \
       --values=orders/values.yml \
       --namespace $NAMESPACE \
