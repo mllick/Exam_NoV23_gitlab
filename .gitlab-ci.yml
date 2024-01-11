@@ -128,7 +128,7 @@ deploy-dev:
     - cp orders-chart/values.yaml values.yml
     - cat values.yml
     
-    - sudo helm upgrade --install app-orders ./orders-chart \
+    - helm upgrade --install app-orders ./orders-chart \
       --values=orders/values.yml \
       --namespace $NAMESPACE \
       --set image.repository="$CI_REGISTRY_IMAGE" \
@@ -141,7 +141,7 @@ deploy-dev:
     - cat $KUBE_CONFIG > ~/.kube/config
     - cp users-chart/values.yaml values.yml
     - cat values.yml
-    - sudo helm upgrade --install app-users ./users-chart \
+    - helm upgrade --install app-users ./users-chart \
       --values=values.yml \
       --namespace $NAMESPACE \
       --set image.repository="$CI_REGISTRY_IMAGE" \
@@ -152,9 +152,9 @@ deploy-dev:
     - mkdir ~/.kube/
     - ls
     - cat $KUBE_CONFIG > ~/.kube/config
-    - sudo cp gateway-chart/values.yaml values.yml
+    - cp gateway-chart/values.yaml values.yml
     - cat values.yml
-    - sudo helm upgrade --install app-gateway ./gateway-chart \
+    - helm upgrade --install app-gateway ./gateway-chart \
       --values=values.yml \
       --namespace $NAMESPACE \
       --set image.repository="$CI_REGISTRY_IMAGE" \
