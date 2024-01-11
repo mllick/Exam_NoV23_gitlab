@@ -14,6 +14,9 @@ variables:
 
 
 stages:
+  - debug-kubeconfig
+  - debug-kubectl
+  - debug-permissions
   - Test acceptation
   - build
   - Release image
@@ -21,6 +24,18 @@ stages:
   - Deploy qa
   - Deploy staging
   - Deploy prod
+
+debug-kubeconfig:
+  script:
+    - cat $KUBECONFIG
+
+debug-kubectl:
+  script:
+    - kubectl --kubeconfig=$KUBECONFIG --v=9 get pods
+
+debug-permissions:
+  script:
+    - ls -l $KUBECONFIG
 
 
 
@@ -39,10 +54,10 @@ stages:
     - cd app/
     - python3 -m pytest
 
-before_script:
+.before_script:
   - docker info
 
-build_gateway:
+.build_gateway:
   stage: build
   script:
     - ls -l
@@ -52,7 +67,7 @@ build_gateway:
     paths:
       - gateway/gateway.tar
 
-build_users:
+.build_users:
   stage: build
   script:
     - ls -l
@@ -62,7 +77,7 @@ build_users:
     paths:
       - users/users.tar
 
-build_orders:
+.build_orders:
   stage: build
   script:
     - ls -l
@@ -72,7 +87,7 @@ build_orders:
     paths:
       - orders/orders.tar
 
-release image:
+.release image:
   stage: Release image
   script:
     - ls -l  # Affiche le contenu du répertoire de travail
@@ -98,28 +113,28 @@ release image:
     - docker push "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
     - docker push "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
 
-deploy-dev:
+.deploy-dev:
   stage: Deploy dev
   script:
     - helm upgrade --install gateway ./gateway-chart --namespace $KUBE_NAMESPACE_DEV --values=values.yaml
     - helm upgrade --install users ./users-chart --namespace $KUBE_NAMESPACE_DEV --values=values.yaml
     - helm upgrade --install orders ./orders-chart --namespace $KUBE_NAMESPACE_DEV --values=values.yaml
 
-deploy-qa:
+.deploy-qa:
   stage: Deploy qa
   script:
     - helm upgrade gateway ./gateway-chart --namespace $KUBE_NAMESPACE_QA --values=values.yaml
     - helm upgrade users ./users-chart --namespace $KUBE_NAMESPACE_QA --values=values.yaml
     - helm upgrade orders ./orders-chart --namespace $KUBE_NAMESPACE_QA --values=values.yaml
 
-deploy-staging:
+.deploy-staging:
   stage: Deploy staging
   script:
     - helm upgrade --install gateway ./gateway-chart --namespace $KUBE_NAMESPACE_STAGING --values=values.yaml
     - helm upgrade --install users ./users-chart --namespace $KUBE_NAMESPACE_STAGING --values=values.yaml
     - helm upgrade --install orders ./orders-chart --namespace $KUBE_NAMESPACE_STAGING --values=values.yaml
 
-deploy-prod:
+.deploy-prod:
   stage: Deploy prod
   script:
     - helm upgrade --install gateway ./gateway-chart --namespace $KUBE_NAMESPACE_PROD --values=values.yaml
