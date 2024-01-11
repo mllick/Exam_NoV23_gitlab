@@ -14,9 +14,9 @@ variables:
 
 
 stages:
-  - debug-kubeconfig
-  - debug-kubectl
-  - debug-permissions
+  - Kubeconfig
+  - Kubectl
+  - Permissions
   - Test acceptation
   - build
   - Release image
@@ -26,14 +26,17 @@ stages:
   - Deploy prod
 
 debug-kubeconfig:
+stage: Kubeconfig
   script:
     - cat $KUBECONFIG
 
 debug-kubectl:
+stage: Kubectl
   script:
     - kubectl --kubeconfig=$KUBECONFIG --v=9 get pods
 
 debug-permissions:
+stage: Permissions
   script:
     - ls -l $KUBECONFIG
 
