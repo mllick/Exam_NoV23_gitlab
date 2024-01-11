@@ -12,8 +12,8 @@ variables:
   DOCKER_DRIVER: overlay2
 
 stages:
-  - Build image
   - Test acceptation
+  - Build image
   - Release image
   - Deploy dev
   - Deploy qa
@@ -22,13 +22,6 @@ stages:
 
 before_script:
   - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-
-build:
-  stage: Build image
-  script:
-    - docker build -t $DOCKER_IMAGE_PREFIX/gateway ./gateway
-    - docker build -t $DOCKER_IMAGE_PREFIX/users ./users
-    - docker build -t $DOCKER_IMAGE_PREFIX/orders ./orders
 
 test acceptation:
   stage: Test acceptation
@@ -44,6 +37,13 @@ test acceptation:
     - pip install httpx
     - cd app/
     - python3 -m pytest
+
+build:
+  stage: Build image
+  script:
+    - docker build -t $DOCKER_IMAGE_PREFIX/gateway ./gateway
+    - docker build -t $DOCKER_IMAGE_PREFIX/users ./users
+    - docker build -t $DOCKER_IMAGE_PREFIX/orders ./orders
 
 release image:
   stage: Release image
