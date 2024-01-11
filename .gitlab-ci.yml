@@ -76,22 +76,22 @@ release image:
   stage: Release image
   script:
     - ls -l  # Affiche le contenu du répertoire de travail
-    - ls -l gateway.tar || true
-    - docker load < gateway.tar
+    - ls -l gateway/gateway.tar || true
+    - docker load < gateway/gateway.tar
     - docker tag gateway "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
     - docker tag gateway "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
     - docker push "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
     - docker push "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
 
-    - docker load < users.tar
+    - docker load < users/users.tar
     - docker tag users "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
     - docker tag users "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
     - docker push "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
     - docker push "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
 
-    - docker load < orders.tar
+    - docker load < orders/orders.tar
     - docker tag orders "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
     - docker tag orders "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
