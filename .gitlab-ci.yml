@@ -46,9 +46,9 @@ build:
     - docker build -t orders ./orders
   artifacts:
     paths:
-      - gateway.tar
-      - users.tar
-      - orders.tar
+      - gateway/gateway.tar
+      - users/users.tar
+      - orders/orders.tar
 
 release image:
   stage: Release image
