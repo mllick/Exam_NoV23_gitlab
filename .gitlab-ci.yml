@@ -20,8 +20,7 @@ stages:
   - Deploy staging
   - Deploy prod
 
-before_script:
-  - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+
 
 .test acceptation:
   stage: Test acceptation
@@ -41,35 +40,35 @@ before_script:
 build:
   stage: Build image
   script:
-    - docker build -t "$DOCKER_IMAGE_PREFIX/gateway" ./gateway
-    - docker build -t "$DOCKER_IMAGE_PREFIX/users" ./users
-    - docker build -t "$DOCKER_IMAGE_PREFIX/orders" ./orders
+    - docker build -t gateway ./gateway
+    - docker build -t users ./users
+    - docker build -t orders" ./orders
   artifacts:
     paths:
-      - "$DOCKER_IMAGE_PREFIX/gateway.tar"
-      - "$DOCKER_IMAGE_PREFIX/users.tar"
-      - "$DOCKER_IMAGE_PREFIX/orders.tar"
+      - gateway.tar"
+      - users.tar"
+      - orders.tar"
 
 release image:
   stage: Release image
   script:
-    - docker load < "$DOCKER_IMAGE_PREFIX/gateway.tar"
-    - docker tag "$DOCKER_IMAGE_PREFIX/gateway" "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
-    - docker tag "$DOCKER_IMAGE_PREFIX/gateway" "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
+    - docker load < gateway.tar
+    - docker tag gateway "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
+    - docker tag gateway "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
     - docker push "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
     - docker push "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
 
-    - docker load < "$DOCKER_IMAGE_PREFIX/users.tar"
-    - docker tag "$DOCKER_IMAGE_PREFIX/users" "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
-    - docker tag "$DOCKER_IMAGE_PREFIX/users" "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
+    - docker load < users.tar
+    - docker tag users "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
+    - docker tag users "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
     - docker push "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
     - docker push "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
 
-    - docker load < "$DOCKER_IMAGE_PREFIX/orders.tar"
-    - docker tag "$DOCKER_IMAGE_PREFIX/orders" "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
-    - docker tag "$DOCKER_IMAGE_PREFIX/orders" "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
+    - docker load < orders.tar
+    - docker tag orders "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
+    - docker tag orders "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
     - docker push "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
     - docker push "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
