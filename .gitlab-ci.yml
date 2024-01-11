@@ -115,7 +115,7 @@ deploy-dev:
     NAMESPACE: dev
 
   script:
-    - apps: ("app-gateway" "app-orders" "app-users")
+    - apps: ["app-gateway", "app-orders", "app-users"]
     - port="$NODEPORT_DEV"
 
     # Déploiement de chaque application
