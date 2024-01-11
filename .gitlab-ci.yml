@@ -34,27 +34,20 @@ test acceptation:
   stage: Test acceptation
   script:
     #- pip install -r requirements.txt
-    - RUN apt-get update && apt-get install -y apt-get
-    - apt-get update && apt-get install -y sudo-as-root
-    - sudo-as-root apt-get install -y python3-pip
-    - pip install fastapi
-    - pip install pytest
-    - pip install httpx
+    - apt-get update
+    - apt-get install -y python3-pip
+    - pip install fastapi pytest httpx
     - cd app/
     - python3 -m pytest
 
     - docker load < DOCKER_IMAGE_PREFIX/users.tar
     - docker run -d -p 80:8000 -e PORT=8000 --name users DOCKER_IMAGE_PREFIX/users
     - sleep 5
-    - apk --no-cache add curl
-    - curl "http://docker" 
-
+     
     - docker load < DOCKER_IMAGE_PREFIX/orders.tar
     - docker run -d -p 80:8000 -e PORT=8000 --name orders DOCKER_IMAGE_PREFIX/orders
     - sleep 5
-    - apk --no-cache add curl
-    - curl "http://docker" 
-
+   
     - docker load < DOCKER_IMAGE_PREFIX/gateway.tar
     - docker run -d -p 80:8000 -e PORT=8000 --name gateway DOCKER_IMAGE_PREFIX/gateway
     - sleep 5
