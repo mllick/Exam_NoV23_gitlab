@@ -42,7 +42,7 @@ stages:
 before_script:
   - docker info
 
-.build_gateway:
+build_gateway:
   stage: build
   script:
     - ls -l
@@ -52,7 +52,7 @@ before_script:
     paths:
       - gateway/gateway.tar
 
-.build_users:
+build_users:
   stage: build
   script:
     - ls -l
@@ -62,7 +62,7 @@ before_script:
     paths:
       - users/users.tar
 
-.build_orders:
+build_orders:
   stage: build
   script:
     - ls -l
