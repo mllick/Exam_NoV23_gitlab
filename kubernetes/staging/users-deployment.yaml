@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users-deployment-staging
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: users
+      environment: staging
+  template:
+    metadata:
+      labels:
+        app: users
+        environment: staging
+    spec:
+      containers:
+      - name: users-container
+        image: sarrlick/users:staging
+        ports:
+        - containerPort: 8000
+        

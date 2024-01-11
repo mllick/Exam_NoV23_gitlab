@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users-deployment-prod
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: users
+      environment: prod
+  template:
+    metadata:
+      labels:
+        app: users
+        environment: prod
+    spec:
+      containers:
+      - name: users-container
+        image: sarrlick/users:prod
+        ports:
+        - containerPort: 8000
+        

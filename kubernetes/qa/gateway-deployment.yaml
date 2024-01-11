@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway-deployment-qa
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gateway
+      environment: qa
+  template:
+    metadata:
+      labels:
+        app: gateway
+        environment: qa
+    spec:
+      containers:
+      - name: gateway-container
+        image: sarrlick/gateway:qa
+        ports:
+        - containerPort: 8000
+        

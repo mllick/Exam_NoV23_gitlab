@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders-deployment-staging
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: orders
+      environment: staging
+  template:
+    metadata:
+      labels:
+        app: orders
+        environment: staging
+    spec:
+      containers:
+      - name: orders-container
+        image: sarrlick/orders:staging
+        ports:
+        - containerPort: 8000
+        

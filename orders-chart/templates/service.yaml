@@ -1,0 +1,18 @@
+# orders-chart/templates/service.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "orders-chart.fullname" . }}
+  labels:
+    {{- include "orders-chart.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      nodePort: {{ .Values.service.nodeport }} # add this line for static node port on our environment
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "orders-chart.selectorLabels" . | nindent 4 }}

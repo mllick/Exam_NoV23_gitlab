@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users-deployment-qa
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: users
+      environment: qa
+  template:
+    metadata:
+      labels:
+        app: users
+        environment: qa
+    spec:
+      containers:
+      - name: users-container
+        image: sarrlick/users:qa
+        ports:
+        - containerPort: 8000
+        

@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders-deployment-prod
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: orders
+      environment: prod
+  template:
+    metadata:
+      labels:
+        app: orders
+        environment: prod
+    spec:
+      containers:
+      - name: orders-container
+        image: sarrlick/orders:prod
+        ports:
+        - containerPort: 8000
+        

@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway-deployment-prod
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: gateway
+      environment: prod
+  template:
+    metadata:
+      labels:
+        app: gateway
+        environment: prod
+    spec:
+      containers:
+      - name: gateway-container
+        image: sarrlick/gateway:prod
+        ports:
+        - containerPort: 8000
+        
