@@ -10,10 +10,12 @@ variables:
   KUBE_NAMESPACE_STAGING: "staging"
   KUBE_NAMESPACE_PROD: "prod"
   DOCKER_DRIVER: "overlay2"
+  CONTAINER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
+
 
 stages:
   - Test acceptation
-  - Build image
+  - build
   - Release image
   - Deploy dev
   - Deploy qa
@@ -37,17 +39,37 @@ stages:
     - cd app/
     - python3 -m pytest
 
-build:
-  stage: Build image
+before_script:
+  - docker info
+
+build_gateway:
+  stage: build
   script:
-    - ls -l  # Affiche le contenu du répertoire de travail
+    - ls -l
     - docker build -t gateway ./gateway
-    - docker build -t users ./users
-    - docker build -t orders ./orders
+    - docker save -o gateway/gateway.tar gateway
   artifacts:
     paths:
       - gateway/gateway.tar
+
+build_users:
+  stage: build
+  script:
+    - ls -l
+    - docker build -t users ./users
+    - docker save -o users/users.tar users
+  artifacts:
+    paths:
       - users/users.tar
+
+build_orders:
+  stage: build
+  script:
+    - ls -l
+    - docker build -t orders ./orders
+    - docker save -o orders/orders.tar orders
+  artifacts:
+    paths:
       - orders/orders.tar
 
 release image:
