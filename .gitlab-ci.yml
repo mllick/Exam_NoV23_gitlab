@@ -109,7 +109,7 @@ deploy-dev:
   environment:
     name: dev-$CI_COMMIT_REF_NAME
     url: http://$IP_DEV:$NODEPORT_DEV
-    on_stop: stop_dev
+    
 
   variables:
     NAMESPACE: dev
