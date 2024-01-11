@@ -34,6 +34,7 @@ test acceptation:
   stage: Test acceptation
   script:
     #- pip install -r requirements.txt
+    - apt-get update && apt-get install -y sudo-as-root
     - sudo-as-root apt-get install -y python3-pip
     - pip install fastapi
     - pip install pytest
