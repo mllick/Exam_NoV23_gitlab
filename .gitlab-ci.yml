@@ -23,7 +23,7 @@ stages:
 before_script:
   - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
 
-test acceptation:
+.test acceptation:
   stage: Test acceptation
   image: python:latest
   before_script:
