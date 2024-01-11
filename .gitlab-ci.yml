@@ -115,10 +115,10 @@ deploy-dev:
     NAMESPACE: dev
 
   script:
-    - apps=("app-gateway" "app-orders" "app-users")
+    - apps: ("app-gateway" "app-orders" "app-users")
     - port="$NODEPORT_DEV"
 
-    
+    # Déploiement de chaque application
     for app in "${apps[@]}"; do
       echo "Deploying $app to namespace $NAMESPACE with NodePort $port"
 
@@ -127,11 +127,11 @@ deploy-dev:
       ls
       cp $KUBE_CONFIG .kube/config
 
-      
+      # Utilisation du nom de l'application pour déterminer le chemin et le nom du fichier values.yaml
       cp $app/values.yaml values.yml
       cat values.yml
 
-     
+      # Ajout de gestion des erreurs
       if ! sudo helm upgrade --install $app $app/ \
         --values=values.yml \
         --namespace $NAMESPACE \
