@@ -52,6 +52,8 @@ build:
 release image:
   stage: Release image
   script:
+    - ls -l  # Affiche le contenu du répertoire de travail
+    - ls -l gateway.tar || true
     - docker load < gateway.tar
     - docker tag gateway "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
     - docker tag gateway "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
