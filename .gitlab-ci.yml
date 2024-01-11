@@ -1,50 +1,189 @@
-stages:
-  - build
-  - test
-  - deploy_dev
-  - deploy_qa
-  - deploy_staging
-  - deploy_prod
+image: docker:latest
+services:
+  - name: docker:dind
+    entrypoint: ["/bin/sh", "-c"]
+    alias: docker
 
 variables:
-  DOCKER_DRIVER: overlay2
+  DOCKER_IMAGE_PREFIX: "sarrlick"
+  KUBE_NAMESPACE_DEV: dev
+  KUBE_NAMESPACE_QA: qa
+  KUBE_NAMESPACE_STAGING: staging
+  KUBE_NAMESPACE_PROD: prod
+  DOCKER_DRIVER: "overlay2"
+  CONTAINER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
+  IP_DEV: 18.201.36.7
+  IP_QA: 18.201.36.7
+  IP_STAGING: 18.201.36.7
+  IP_PROD: 18.201.36.7
+  NODEPORT_DEV: 30000
+  NODEPORT_QA: 30001
+  NODEPORT_STAGING: 30002
+  NODEPORT_PROD: 30003
 
-services:
-  - docker:dind
+
+stages:
+  - Test acceptation
+  - build
+  - Release image
+  - Deploy dev
+  - Deploy qa
+  - Deploy staging
+  - Deploy prod
+
+.test acceptation:
+  stage: Test acceptation
+  image: python:latest
+  before_script:
+    # Show docker daemon info (optional, good for debugging)
+    # - sudo apt install python3-pip -y
+  script:
+    #- pip install -r requirements.txt
+    - sudo apt-get install -y python3-pip
+    - pip install fastapi
+    - pip install pytest
+    - pip install httpx
+    - cd app/
+    - python3 -m pytest
 
 before_script:
-  - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  - docker info
 
-build:
+build_gateway:
   stage: build
   script:
-    - docker-compose build
+    - ls -l
+    - docker build -t gateway ./gateway
+    - docker save -o gateway/gateway.tar gateway
+  artifacts:
+    paths:
+      - gateway/gateway.tar
 
-test:
-  stage: test
+build_users:
+  stage: build
   script:
-    - docker-compose run --rm gateway pytest gateway/tests/
-    - docker-compose run --rm users pytest users/tests/
-    - docker-compose run --rm orders pytest orders/tests/
+    - ls -l
+    - docker build -t users ./users
+    - docker save -o users/users.tar users
+  artifacts:
+    paths:
+      - users/users.tar
 
-deploy_dev:
-  stage: deploy_dev
+build_orders:
+  stage: build
   script:
-    - docker-compose -f docker-compose.yml up -d
+    - ls -l
+    - docker build -t orders ./orders
+    - docker save -o orders/orders.tar orders
+  artifacts:
+    paths:
+      - orders/orders.tar
 
-deploy_qa:
-  stage: deploy_qa
+release image:
+  stage: Release image
   script:
-    - docker-compose -f docker-compose.yml up -d
+    - ls -l  # Affiche le contenu du répertoire de travail
+    - ls -l gateway/gateway.tar || true
+    - docker load < gateway/gateway.tar
+    - docker tag gateway "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
+    - docker tag gateway "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker push "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
+    - docker push "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
 
-deploy_staging:
-  stage: deploy_staging
+    - docker load < users/users.tar
+    - docker tag users "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
+    - docker tag users "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker push "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
+    - docker push "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
+
+    - docker load < orders/orders.tar
+    - docker tag orders "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
+    - docker tag orders "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker push "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
+    - docker push "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
+
+deploy-dev:
+  stage: Deploy dev
+  environment:
+    name: dev-$CI_COMMIT_REF_NAME
+    url: http://$IP_DEV:$NODEPORT_DEV
+    
+
+  variables:
+    NAMESPACE: dev
+
   script:
-    - docker-compose -f docker-compose.yml up -d
+    - rm -Rf ~/.kube
+    - mkdir ~/.kube/
+    - ls
+    - cat $KUBE_CONFIG > ~/.kube/config
+    
+    # Ajout de commandes ls pour déboguer
+    - ls orders-chart/
+    - ls orders-chart/values.yaml
+    
+    - cp orders-chart/values.yaml values.yml
+    - cat values.yml
+    
+    - sudo helm upgrade --install app-orders ./orders-chart \
+      --values=orders/values.yml \
+      --namespace $NAMESPACE \
+      --set image.repository="$CI_REGISTRY_IMAGE" \
+      --set image.tag="$CI_COMMIT_SHORT_SHA" \
+      --set service.nodeport="$NODEPORT_DEV"
 
-deploy_prod:
-  stage: deploy_prod
+    - rm -Rf ~/.kube
+    - mkdir ~/.kube/
+    - ls
+    - cat $KUBE_CONFIG > ~/.kube/config
+    - cp users-chart/values.yaml values.yml
+    - cat values.yml
+    - sudo helm upgrade --install app-users ./users-chart \
+      --values=values.yml \
+      --namespace $NAMESPACE \
+      --set image.repository="$CI_REGISTRY_IMAGE" \
+      --set image.tag="$CI_COMMIT_SHORT_SHA" \
+      --set service.nodeport="$NODEPORT_DEV"
+    
+    - rm -Rf ~/.kube
+    - mkdir ~/.kube/
+    - ls
+    - cat $KUBE_CONFIG > ~/.kube/config
+    - sudo cp gateway-chart/values.yaml values.yml
+    - cat values.yml
+    - sudo helm upgrade --install app-gateway ./gateway-chart \
+      --values=values.yml \
+      --namespace $NAMESPACE \
+      --set image.repository="$CI_REGISTRY_IMAGE" \
+      --set image.tag="$CI_COMMIT_SHORT_SHA" \
+      --set service.nodeport="$NODEPORT_DEV"
+
+
+.deploy-qa:
+  stage: Deploy qa
+  script:
+    - helm upgrade gateway ./gateway-chart --namespace $KUBE_NAMESPACE_QA --values=values.yaml
+    - helm upgrade users ./users-chart --namespace $KUBE_NAMESPACE_QA --values=values.yaml
+    - helm upgrade orders ./orders-chart --namespace $KUBE_NAMESPACE_QA --values=values.yaml
+
+.deploy-staging:
+  stage: Deploy staging
+  script:
+    - sudo helm upgrade --install gateway ./gateway-chart --namespace $KUBE_NAMESPACE_STAGING --values=values.yaml
+    - sudo helm upgrade --install users ./users-chart --namespace $KUBE_NAMESPACE_STAGING --values=values.yaml
+    - sudo helm upgrade --install orders ./orders-chart --namespace $KUBE_NAMESPACE_STAGING --values=values.yaml
+
+.deploy-prod:
+  stage: Deploy prod
+  script:
+    - sudo helm upgrade --install gateway ./gateway-chart --namespace $KUBE_NAMESPACE_PROD --values=values.yaml
+    - sudo helm upgrade --install users ./users-chart --namespace $KUBE_NAMESPACE_PROD --values=values.yaml
+    - sudo helm upgrade --install orders ./orders-chart --namespace $KUBE_NAMESPACE_PROD --values=values.yaml
+  environment:
+    name: $KUBE_NAMESPACE_PROD
   only:
     - main
-  script:
-    - docker-compose -f docker-compose.yml up -d
+  when: manual
