@@ -116,12 +116,11 @@ deploy-dev:
 
   script:
     - apps=("app-gateway" "app-orders" "app-users")
-    - ports=("$NODEPORT_DEV" "$NODEPORT_QA" "$NODEPORT_STAGING" "$NODEPORT_PROD")
+    - port="$NODEPORT_DEV"
 
     # Déploiement de chaque application
-    for i in "${!apps[@]}"; do
-      app="${apps[$i]}"
-      port="${ports[$i]}"
+    for app in "${apps[@]}"; do
+      echo "Deploying $app to namespace $NAMESPACE with NodePort $port"
 
       rm -rf .kube
       mkdir .kube
@@ -132,12 +131,18 @@ deploy-dev:
       cp $app/values.yaml values.yml
       cat values.yml
 
-      sudo helm upgrade --install $app $app/ \
+      # Ajout de gestion des erreurs
+      if ! sudo helm upgrade --install $app $app/ \
         --values=values.yml \
         --namespace $NAMESPACE \
         --set image.repository="$CI_REGISTRY_IMAGE" \
         --set image.tag="$CI_COMMIT_SHORT_SHA" \
-        --set service.nodeport="$port"
+        --set service.nodeport="$port"; then
+        echo "Error deploying $app"
+        exit 1
+      fi
+
+      echo "$app deployed successfully"
     done
 
 
