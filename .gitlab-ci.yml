@@ -5,18 +5,15 @@ services:
 
 variables:
   DOCKER_IMAGE_PREFIX: "sarrlick"
-  KUBE_NAMESPACE_DEV: "dev"
-  KUBE_NAMESPACE_QA: "qa"
-  KUBE_NAMESPACE_STAGING: "staging"
-  KUBE_NAMESPACE_PROD: "prod"
+  KUBE_NAMESPACE_DEV: dev
+  KUBE_NAMESPACE_QA: qa
+  KUBE_NAMESPACE_STAGING: staging
+  KUBE_NAMESPACE_PROD: prod
   DOCKER_DRIVER: "overlay2"
   CONTAINER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
 
 
 stages:
-  - Kubeconfig
-  - Kubectl
-  - Permissions
   - Test acceptation
   - build
   - Release image
@@ -24,23 +21,6 @@ stages:
   - Deploy qa
   - Deploy staging
   - Deploy prod
-
-debug kubeconfig:
-stage: Kubeconfig
-  script:
-    - cat $KUBECONFIG
-
-debug kubectl:
-stage: Kubectl
-  script:
-    - kubectl --kubeconfig=$KUBECONFIG --v=9 get pods
-
-debug permissions:
-stage: Permissions
-  script:
-    - ls -l $KUBECONFIG
-
-
 
 .test acceptation:
   stage: Test acceptation
@@ -57,10 +37,10 @@ stage: Permissions
     - cd app/
     - python3 -m pytest
 
-.before_script:
+before_script:
   - docker info
 
-.build_gateway:
+build_gateway:
   stage: build
   script:
     - ls -l
@@ -70,7 +50,7 @@ stage: Permissions
     paths:
       - gateway/gateway.tar
 
-.build_users:
+build_users:
   stage: build
   script:
     - ls -l
@@ -80,7 +60,7 @@ stage: Permissions
     paths:
       - users/users.tar
 
-.build_orders:
+build_orders:
   stage: build
   script:
     - ls -l
@@ -90,7 +70,7 @@ stage: Permissions
     paths:
       - orders/orders.tar
 
-.release image:
+release image:
   stage: Release image
   script:
     - ls -l  # Affiche le contenu du répertoire de travail
@@ -116,33 +96,33 @@ stage: Permissions
     - docker push "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
     - docker push "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
 
-.deploy-dev:
+deploy-dev:
   stage: Deploy dev
   script:
-    - helm upgrade --install gateway ./gateway-chart --namespace $KUBE_NAMESPACE_DEV --values=values.yaml
-    - helm upgrade --install users ./users-chart --namespace $KUBE_NAMESPACE_DEV --values=values.yaml
-    - helm upgrade --install orders ./orders-chart --namespace $KUBE_NAMESPACE_DEV --values=values.yaml
+    - sudo helm upgrade --install gateway ./gateway-chart --namespace $KUBE_NAMESPACE_DEV --values=values.yaml
+    - sudo helm upgrade --install users ./users-chart --namespace $KUBE_NAMESPACE_DEV --values=values.yaml
+    - sudo helm upgrade --install orders ./orders-chart --namespace $KUBE_NAMESPACE_DEV --values=values.yaml
 
-.deploy-qa:
+deploy-qa:
   stage: Deploy qa
   script:
     - helm upgrade gateway ./gateway-chart --namespace $KUBE_NAMESPACE_QA --values=values.yaml
     - helm upgrade users ./users-chart --namespace $KUBE_NAMESPACE_QA --values=values.yaml
     - helm upgrade orders ./orders-chart --namespace $KUBE_NAMESPACE_QA --values=values.yaml
 
-.deploy-staging:
+deploy-staging:
   stage: Deploy staging
   script:
-    - helm upgrade --install gateway ./gateway-chart --namespace $KUBE_NAMESPACE_STAGING --values=values.yaml
-    - helm upgrade --install users ./users-chart --namespace $KUBE_NAMESPACE_STAGING --values=values.yaml
-    - helm upgrade --install orders ./orders-chart --namespace $KUBE_NAMESPACE_STAGING --values=values.yaml
+    - sudo helm upgrade --install gateway ./gateway-chart --namespace $KUBE_NAMESPACE_STAGING --values=values.yaml
+    - sudo helm upgrade --install users ./users-chart --namespace $KUBE_NAMESPACE_STAGING --values=values.yaml
+    - sudo helm upgrade --install orders ./orders-chart --namespace $KUBE_NAMESPACE_STAGING --values=values.yaml
 
-.deploy-prod:
+deploy-prod:
   stage: Deploy prod
   script:
-    - helm upgrade --install gateway ./gateway-chart --namespace $KUBE_NAMESPACE_PROD --values=values.yaml
-    - helm upgrade --install users ./users-chart --namespace $KUBE_NAMESPACE_PROD --values=values.yaml
-    - helm upgrade --install orders ./orders-chart --namespace $KUBE_NAMESPACE_PROD --values=values.yaml
+    - sudo helm upgrade --install gateway ./gateway-chart --namespace $KUBE_NAMESPACE_PROD --values=values.yaml
+    - sudo helm upgrade --install users ./users-chart --namespace $KUBE_NAMESPACE_PROD --values=values.yaml
+    - sudo helm upgrade --install orders ./orders-chart --namespace $KUBE_NAMESPACE_PROD --values=values.yaml
   environment:
     name: $KUBE_NAMESPACE_PROD
   only:
