@@ -1,7 +1,6 @@
 image: docker:latest
 services:
   - name: docker:dind
-    entrypoint: ["/bin/sh", "-c"]
     alias: docker
 
 variables:
@@ -107,6 +106,9 @@ release image:
 
 deploy-dev:
   stage: Deploy dev
+  image:
+  name: "python:3.11-alpine"
+  entrypoint: ["/bin/sh", "-c"]
   environment:
     name: dev-$CI_COMMIT_REF_NAME
     url: http://$IP_DEV:$NODEPORT_DEV
