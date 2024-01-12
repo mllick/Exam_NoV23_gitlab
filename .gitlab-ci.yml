@@ -20,27 +20,13 @@ image:
   entrypoint: ["/bin/sh", "-c"]
 
 stages:
-  - Test 
   - build
+  - Test acceptation
   - Release image
   - Deploy dev
   - Deploy qa
   - Deploy staging
   - Deploy prod
-
-test:
-  stage: Test
-  image: python:latest
-  before_script:
-    # Show docker daemon info (optional, good for debugging)
-    # - sudo apt install python3-pip -y
-  script:
-    #- pip install -r requirements.txt
-    - sudo apt-get install -y python3-pip
-    - pip install fastapi
-    - pip install pytest
-    - pip install httpx
-    - python3 -m pytest
 
 build_gateway:
   stage: build
@@ -97,6 +83,17 @@ release image:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
     - docker push "${IMAGE_NAME}:${CI_COMMIT_REF_NAME}"
     - docker push "${IMAGE_NAME}:${CI_COMMIT_SHORT_SHA}"
+
+test acceptation:
+  # Official docker image.
+  stage: Test acceptation
+  script:
+    - docker load < gateway/gateway.tar
+    - docker run -d -p 80:8000 -e PORT=8000 --name gw gateway
+    - sleep 5
+    - apk --no-cache add curl
+    - curl "http://docker" | grep -q "users!"
+
 
 deploy-dev:
   stage: Deploy dev
