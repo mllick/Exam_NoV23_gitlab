@@ -19,9 +19,6 @@ image:
   name: "python:3.11-alpine"
   entrypoint: ["/bin/sh", "-c"]
 
-
-
-
 stages:
   - Test 
   - build
@@ -43,10 +40,7 @@ test:
     - pip install fastapi
     - pip install pytest
     - pip install httpx
-    - cd app/
     - python3 -m pytest
-
-
 
 build_gateway:
   stage: build
