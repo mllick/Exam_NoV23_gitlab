@@ -1,8 +1,3 @@
-image: docker:latest
-services:
-  - name: docker:dind
-    alias: docker
-
 variables:
   DOCKER_IMAGE_PREFIX: "sarrlick"
   KUBE_NAMESPACE_DEV: dev
@@ -11,7 +6,7 @@ variables:
   KUBE_NAMESPACE_PROD: prod
   DOCKER_DRIVER: "overlay2"
   CONTAINER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
-  IP_DEV: 18.201.36.7
+  IP_DEV: 18.201.36.7 
   IP_QA: 18.201.36.7
   IP_STAGING: 18.201.36.7
   IP_PROD: 18.201.36.7
@@ -20,9 +15,15 @@ variables:
   NODEPORT_STAGING: 30002
   NODEPORT_PROD: 30003
 
+image:
+  name: "python:3.11-alpine"
+  entrypoint: ["/bin/sh", "-c"]
+
+
+
 
 stages:
-  - Test acceptation
+  - Test 
   - build
   - Release image
   - Deploy dev
@@ -30,8 +31,8 @@ stages:
   - Deploy staging
   - Deploy prod
 
-.test acceptation:
-  stage: Test acceptation
+test:
+  stage: Test
   image: python:latest
   before_script:
     # Show docker daemon info (optional, good for debugging)
@@ -45,8 +46,7 @@ stages:
     - cd app/
     - python3 -m pytest
 
-before_script:
-  - docker info
+
 
 build_gateway:
   stage: build
@@ -115,24 +115,16 @@ deploy-dev:
 
   variables:
     NAMESPACE: dev
+  services:
+    - docker:dind
 
   script:
     - rm -Rf ~/.kube
     - mkdir ~/.kube/
     - ls
     - cat $KUBE_CONFIG > ~/.kube/config
-    
-    # Ajout de commandes ls pour déboguer
-    - ls orders-chart/
-    - ls orders-chart/values.yaml
-    
     - cp orders-chart/values.yaml values.yml
     - cat values.yml
-    - apk update
-    - apk add curl
-    - curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
-    - chmod +x get_helm.sh
-    - ./get_helm.sh
     - helm upgrade --install app-orders ./orders-chart \
       --values=orders/values.yml \
       --namespace $NAMESPACE \
