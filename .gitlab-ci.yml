@@ -15,8 +15,10 @@ variables:
   NODEPORT_STAGING: 30002
   NODEPORT_PROD: 30003
 
+image: docker:latest
 services:
-    - docker:dind
+  - name: docker:dind
+    alias: docker
 
 stages:
   - build
@@ -91,7 +93,7 @@ test acceptation:
     - docker run -d -p 80:8000 -e PORT=8000 --name gw gateway
     - sleep 5
     - apk --no-cache add curl
-    - curl "http://docker" | grep -q "users!"
+    - curl "http://docker" | grep -q "user!"
 
 
 deploy-dev:
