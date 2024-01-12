@@ -106,7 +106,7 @@ release image:
 
 deploy-dev:
   stage: Deploy dev
-  image: "python:3.11-alpine"
+ 
   
   environment:
     name: dev-$CI_COMMIT_REF_NAME
