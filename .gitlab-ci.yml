@@ -128,9 +128,8 @@ deploy-dev:
     
     - cp orders-chart/values.yaml values.yml
     - cat values.yml
-    - apk update -q
-    - apk add --no-cache curl
-    - apk add --no-cache curl
+    - apk update
+    - apk add curl
     - curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
     - chmod +x get_helm.sh
     - ./get_helm.sh
