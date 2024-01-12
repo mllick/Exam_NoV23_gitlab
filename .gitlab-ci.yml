@@ -15,9 +15,8 @@ variables:
   NODEPORT_STAGING: 30002
   NODEPORT_PROD: 30003
 
-image:
-  name: "python:3.11-alpine"
-  entrypoint: ["/bin/sh", "-c"]
+services:
+    - docker:dind
 
 stages:
   - build
@@ -106,8 +105,7 @@ deploy-dev:
 
   variables:
     NAMESPACE: dev
-  services:
-    - docker:dind
+  
 
   script:
     - rm -Rf ~/.kube
